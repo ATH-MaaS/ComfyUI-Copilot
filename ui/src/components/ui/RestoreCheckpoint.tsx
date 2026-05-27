@@ -29,7 +29,12 @@ const RestoreCheckpoint = ({ checkpointId, onRestore, title }: { checkpointId: n
               }
           });
 
-          const checkpointData = await WorkflowChatAPI.restoreWorkflowCheckpoint(checkpointId);
+          const sessionId = localStorage.getItem("sessionId") || "";
+          if (!sessionId) {
+              throw new Error("Missing current session.");
+          }
+
+          const checkpointData = await WorkflowChatAPI.restoreWorkflowCheckpoint(checkpointId, sessionId);
           
           // Use UI format if available, otherwise use API format
           const workflowToLoad = checkpointData.workflow_data_ui || checkpointData.workflow_data;

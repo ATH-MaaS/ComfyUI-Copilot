@@ -384,16 +384,19 @@ export function MessageList({ messages, latestInput, onOptionClick, installedNod
                                         if (app.graph) {
                                             const workflowPrompt = await app.graphToPrompt();
                                             const workflowUI = workflowPrompt.workflow; // UI format
+                                            const sessionId = localStorage.getItem("sessionId") || "";
                                             
-                                            if (workflowUI) {
+                                            if (workflowUI && sessionId) {
                                                 // 调用API更新workflow_ui字段
                                                 const response = await fetch('/api/update-workflow-ui', {
                                                     method: 'POST',
                                                     headers: {
-                                                        'Content-Type': 'application/json'
+                                                        'Content-Type': 'application/json',
+                                                        'X-Session-ID': sessionId
                                                     },
                                                     body: JSON.stringify({
                                                         checkpoint_id: checkpointId,
+                                                        session_id: sessionId,
                                                         workflow_data_ui: workflowUI
                                                     })
                                                 });
@@ -878,4 +881,4 @@ export function MessageList({ messages, latestInput, onOptionClick, installedNod
             {loading && <LoadingMessage />}
         </div>
     );
-} 
+}

@@ -21,7 +21,11 @@ import os
 import shutil
 
 from ..service.debug_agent import debug_workflow_errors
-from ..dao.workflow_table import save_workflow_data, get_workflow_data_by_id, update_workflow_ui_by_id
+from ..dao.workflow_table import (
+    save_workflow_data,
+    get_workflow_data_by_id_and_session,
+    update_workflow_ui_by_id_and_session,
+)
 from ..service.mcp_client import comfyui_agent_invoke
 from ..utils.request_context import set_request_context, get_session_id
 from ..utils.logger import log
@@ -445,11 +449,12 @@ async def restore_workflow_checkpoint(request):
     
     try:
         version_id = request.query.get('version_id')
+        session_id = request.query.get('session_id') or request.headers.get('X-Session-ID')
         
-        if not version_id:
+        if not version_id or not session_id:
             return web.json_response({
                 "success": False,
-                "message": "Missing required parameter: version_id"
+                "message": "Missing required parameters: version_id and session_id"
             })
         
         try:
@@ -460,8 +465,8 @@ async def restore_workflow_checkpoint(request):
                 "message": "Invalid version_id format"
             })
         
-        # Get workflow data by version ID
-        workflow_version = get_workflow_data_by_id(version_id)
+        # Get workflow data only if the checkpoint belongs to the current session.
+        workflow_version = get_workflow_data_by_id_and_session(version_id, session_id)
         
         if not workflow_version:
             return web.json_response({
@@ -694,12 +699,13 @@ async def update_workflow_ui(request):
     
     try:
         checkpoint_id = req_json.get('checkpoint_id')
+        session_id = req_json.get('session_id') or request.headers.get('X-Session-ID')
         workflow_data_ui = req_json.get('workflow_data_ui')
         
-        if not checkpoint_id or not workflow_data_ui:
+        if not checkpoint_id or not session_id or not workflow_data_ui:
             return web.json_response({
                 "success": False,
-                "message": "Missing required parameters: checkpoint_id and workflow_data_ui"
+                "message": "Missing required parameters: checkpoint_id, session_id and workflow_data_ui"
             })
         
         try:
@@ -710,8 +716,8 @@ async def update_workflow_ui(request):
                 "message": "Invalid checkpoint_id format"
             })
         
-        # Update only the workflow_data_ui field
-        success = update_workflow_ui_by_id(checkpoint_id, workflow_data_ui)
+        # Update only checkpoints owned by the current session.
+        success = update_workflow_ui_by_id_and_session(checkpoint_id, session_id, workflow_data_ui)
         
         if success:
             log.info(f"Successfully updated workflow_data_ui for checkpoint ID: {checkpoint_id}")
