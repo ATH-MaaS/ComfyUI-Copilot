@@ -121,6 +121,7 @@ TENANT_ID = os.getenv("TENANT_ID") or None
 
 # MiniMax models (static list since MiniMax does not expose a /v1/models endpoint)
 MINIMAX_MODELS = [
+    {"label": "MiniMax-M3", "name": "MiniMax-M3", "image_enable": True},
     {"label": "MiniMax-M2.7", "name": "MiniMax-M2.7", "image_enable": True},
     {"label": "MiniMax-M2.7-highspeed", "name": "MiniMax-M2.7-highspeed", "image_enable": True},
 ]

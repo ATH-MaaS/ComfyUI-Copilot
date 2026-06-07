@@ -134,6 +134,13 @@ class TestMiniMaxConstants(unittest.TestCase):
             self.assertIn("name", model)
             self.assertIn("image_enable", model)
 
+    def test_minimax_m3_in_models(self):
+        names = [m["name"] for m in _globals_mod.MINIMAX_MODELS]
+        self.assertIn("MiniMax-M3", names)
+
+    def test_minimax_m3_is_first(self):
+        self.assertEqual(_globals_mod.MINIMAX_MODELS[0]["name"], "MiniMax-M3")
+
     def test_minimax_m27_in_models(self):
         names = [m["name"] for m in _globals_mod.MINIMAX_MODELS]
         self.assertIn("MiniMax-M2.7", names)
@@ -141,6 +148,11 @@ class TestMiniMaxConstants(unittest.TestCase):
     def test_minimax_m27_highspeed_in_models(self):
         names = [m["name"] for m in _globals_mod.MINIMAX_MODELS]
         self.assertIn("MiniMax-M2.7-highspeed", names)
+
+    def test_minimax_older_models_removed(self):
+        names = [m["name"] for m in _globals_mod.MINIMAX_MODELS]
+        for older in ("MiniMax-M2.5", "MiniMax-M2.1", "MiniMax-M2", "MiniMax-M1"):
+            self.assertNotIn(older, names)
 
 
 class TestApplyLlmEnvDefaults(unittest.TestCase):
@@ -253,7 +265,7 @@ class TestCreateAgentMiniMax(unittest.TestCase):
             config = {"openai_base_url": "https://api.minimax.io/v1", "openai_api_key": "test-key"}
             self._agent_mod.create_agent(config=config, name="test", instructions="test")
             model_name = mock_model.call_args[0][0]
-            self.assertEqual(model_name, "MiniMax-M2.7")
+            self.assertEqual(model_name, "MiniMax-M3")
 
     def test_openai_default_model(self):
         with patch.object(self._agent_mod, "Agent") as mock_agent, \

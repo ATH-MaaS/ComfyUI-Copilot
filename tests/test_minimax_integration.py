@@ -31,7 +31,7 @@ class TestMiniMaxChatCompletions(unittest.TestCase):
                 "Content-Type": "application/json",
             },
             json={
-                "model": "MiniMax-M2.7",
+                "model": "MiniMax-M3",
                 "messages": [{"role": "user", "content": "Say hello in one word."}],
                 "max_tokens": 10,
             },
@@ -72,7 +72,7 @@ class TestMiniMaxChatCompletions(unittest.TestCase):
                 "Content-Type": "application/json",
             },
             json={
-                "model": "MiniMax-M2.7",
+                "model": "MiniMax-M3",
                 "messages": [{"role": "user", "content": "What is 1+1?"}],
                 "max_tokens": 10,
                 "temperature": 0,
@@ -96,7 +96,7 @@ class TestMiniMaxKeyVerification(unittest.TestCase):
                 "Content-Type": "application/json",
             },
             json={
-                "model": "MiniMax-M2.7",
+                "model": "MiniMax-M3",
                 "messages": [{"role": "user", "content": "hi"}],
                 "max_tokens": 1,
             },
@@ -114,7 +114,7 @@ class TestMiniMaxKeyVerification(unittest.TestCase):
                 "Content-Type": "application/json",
             },
             json={
-                "model": "MiniMax-M2.7",
+                "model": "MiniMax-M3",
                 "messages": [{"role": "user", "content": "hi"}],
                 "max_tokens": 1,
             },

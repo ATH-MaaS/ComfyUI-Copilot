@@ -91,7 +91,7 @@ def create_agent(**kwargs) -> Agent:
     model_from_config = (config or {}).get("model_select")
     model_from_kwargs = kwargs.pop("model", None)
 
-    default_model = "MiniMax-M2.7" if is_minimax else "gemini-2.5-flash"
+    default_model = "MiniMax-M3" if is_minimax else "gemini-2.5-flash"
     model_name = model_from_config or model_from_kwargs or default_model
     model = OpenAIChatCompletionsModel(model_name, openai_client=client)
 

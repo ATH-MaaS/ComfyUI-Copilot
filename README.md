@@ -172,7 +172,7 @@ Click the * button，config chat model and workflow generate model seperately.
 </div>
 
 #### **Using MiniMax as LLM Provider**
-[MiniMax](https://www.minimaxi.com/) provides OpenAI-compatible API with powerful models (MiniMax-M2.7, MiniMax-M2.7-highspeed with 1M context window).
+[MiniMax](https://www.minimaxi.com/) provides OpenAI-compatible API with powerful models (MiniMax-M3 with 512K context window and 128K max output, plus MiniMax-M2.7 and MiniMax-M2.7-highspeed).
 
 **Option 1 — Environment variables** (recommended for permanent setup):
 ```bash

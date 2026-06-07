@@ -166,7 +166,7 @@ https://github.com/user-attachments/assets/17f8e822-e852-47fc-8dcb-0471526b099e
 </div>
 
 #### **使用 MiniMax 作为 LLM 提供商**
-[MiniMax](https://www.minimaxi.com/) 提供 OpenAI 兼容的 API，支持高性能模型（MiniMax-M2.7、MiniMax-M2.7-highspeed，支持 1M 上下文窗口）。
+[MiniMax](https://www.minimaxi.com/) 提供 OpenAI 兼容的 API，支持高性能模型（MiniMax-M3，512K 上下文窗口，最大输出 128K，以及 MiniMax-M2.7 和 MiniMax-M2.7-highspeed）。
 
 **方式一 — 环境变量**（推荐，适用于固定配置）：
 ```bash

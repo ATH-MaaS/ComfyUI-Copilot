@@ -124,7 +124,7 @@ async def verify_openai_key(req):
                         "Content-Type": "application/json",
                     },
                     json={
-                        "model": "MiniMax-M2.7",
+                        "model": "MiniMax-M3",
                         "messages": [{"role": "user", "content": "hi"}],
                         "max_tokens": 1,
                     },
