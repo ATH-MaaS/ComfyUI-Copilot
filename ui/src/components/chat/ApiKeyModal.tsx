@@ -35,11 +35,37 @@ interface ApiKeyModalProps {
 }
 
 const BASE_URL = config.apiBaseUrl
+const ATLAS_CLOUD_BASE_URL = 'https://api.atlascloud.ai/v1';
+const ATLAS_CLOUD_DEFAULT_MODEL = 'qwen/qwen3.5-flash';
 
 const TAB_LIST = [
     'OpenAI',
+    'Atlas Cloud',
     'LMStudio'
 ]
+
+const TAB_DEFAULTS: Record<string, Record<string, string>> = {
+    OpenAI: {
+        openaiApiKey: '',
+        openaiBaseUrl: '',
+    },
+    'Atlas Cloud': {
+        openaiApiKey: '',
+        openaiBaseUrl: ATLAS_CLOUD_BASE_URL,
+    },
+    LMStudio: {
+        openaiApiKey: '',
+        openaiBaseUrl: 'http://localhost:1234/v1',
+    },
+}
+
+const isLocalLLMBaseUrl = (baseUrl: string) => {
+    const value = baseUrl.toLowerCase();
+    return value.includes('localhost') ||
+        value.includes('127.0.0.1') ||
+        value.includes(':1234') ||
+        value.includes(':1235');
+}
 
 export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onConfigurationUpdated }: ApiKeyModalProps) {
     const [apiKey, setApiKey] = useState(initialApiKey);
@@ -76,10 +102,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
     useEffect(() => {
         const map: Record<string, Record<string, string>> = {}
         TAB_LIST?.forEach((tab) => {
-            map[tab] = {
-                openaiApiKey: '',
-                openaiBaseUrl: '',
-            }
+            map[tab] = { ...TAB_DEFAULTS[tab] }
         })
         setTabStrMap(map);
     }, [])
@@ -132,10 +155,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
 
     const handleVerifyOpenAiKey = async () => {
         // Check if it looks like LMStudio URL
-        const isLMStudio = openaiBaseUrl.toLowerCase().includes('localhost') || 
-                          openaiBaseUrl.toLowerCase().includes('127.0.0.1') ||
-                          openaiBaseUrl.includes(':1234') ||
-                          openaiBaseUrl.includes(':1235');
+        const isLMStudio = isLocalLLMBaseUrl(openaiBaseUrl);
         
         if (!openaiApiKey.trim() && !isLMStudio) {
             setVerificationResult({
@@ -176,10 +196,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
     };
 
     const handleVerifyWorkflowLLMKey = async () => {
-        const isLMStudio = workflowLLMBaseUrl.toLowerCase().includes('localhost') || 
-                           workflowLLMBaseUrl.toLowerCase().includes('127.0.0.1') ||
-                           workflowLLMBaseUrl.includes(':1234') ||
-                           workflowLLMBaseUrl.includes(':1235');
+        const isLMStudio = isLocalLLMBaseUrl(workflowLLMBaseUrl);
 
         if (!workflowLLMApiKey.trim() && !isLMStudio) {
             setWorkflowVerificationResult({
@@ -239,8 +256,14 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
 
     const handleTabChange = (tab: string) => {
         setActiveTab(tab);
-        setOpenaiApiKey(tabStrMap?.[tab]?.openaiApiKey || '');
-        setOpenaiBaseUrl(tabStrMap?.[tab]?.openaiBaseUrl || '');
+        const defaults = TAB_DEFAULTS[tab] || {};
+        setOpenaiApiKey(tabStrMap?.[tab]?.openaiApiKey || defaults.openaiApiKey || '');
+        setOpenaiBaseUrl(tabStrMap?.[tab]?.openaiBaseUrl || defaults.openaiBaseUrl || '');
+    }
+
+    const applyAtlasCloudWorkflowDefaults = () => {
+        setWorkflowLLMBaseUrl(ATLAS_CLOUD_BASE_URL);
+        setWorkflowLLMModel((current) => current || ATLAS_CLOUD_DEFAULT_MODEL);
     }
 
     const handleSendEmail = async () => {
@@ -405,7 +428,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
                 
                 {/* LLM Configuration */}
                 <CollapsibleCard 
-                    title={<h3 className="text-sm text-gray-900 dark:text-white font-medium">LLM Configuration (OpenAI / LMStudio / Custom)</h3>}
+                    title={<h3 className="text-sm text-gray-900 dark:text-white font-medium">LLM Configuration (OpenAI / Atlas Cloud / LMStudio / Custom)</h3>}
                     className='mb-4'
                 >
                     <div>
@@ -487,7 +510,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
                                     }))
                                     setOpenaiBaseUrl(e.target.value)
                                 }}
-                                placeholder={`${activeTab==='OpenAI' ? "https://api.openai.com/v1" : "http://localhost:1234/v1"}`}
+                                placeholder={`${activeTab === 'OpenAI' ? "https://api.openai.com/v1" : activeTab === 'Atlas Cloud' ? ATLAS_CLOUD_BASE_URL : "http://localhost:1234/v1"}`}
                                 className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-lg text-xs
                                 bg-gray-50 dark:bg-gray-700
                                 text-gray-900 dark:text-white
@@ -501,6 +524,12 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
                         <div className="mb-4 text-xs text-gray-500 dark:text-gray-400">
                             {
                                 activeTab === 'LMStudio' && <div className="mb-1"><strong>� For LMStudio:</strong> http://localhost:1235/v1</div>
+                            }
+                            {
+                                activeTab === 'Atlas Cloud' && <>
+                                    <div className="mb-1"><strong>🌐 For Atlas Cloud:</strong> {ATLAS_CLOUD_BASE_URL} (requires API key)</div>
+                                    <div><strong>Model example:</strong> {ATLAS_CLOUD_DEFAULT_MODEL}</div>
+                                </>
                             }
                             {
                                 activeTab === 'OpenAI' && <>
@@ -609,6 +638,7 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
                             />
                             <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                                 <div className="mb-1"><strong>Optional:</strong> If you don't set, the workflow will use the Claude4 model provided by us. If you need to use other models(note: only some very powerful closed-source models can support this, and they require at least 8192 context) for workflow Debug and modification, please set it.</div>
+                                <div><strong>Atlas Cloud:</strong> use {ATLAS_CLOUD_BASE_URL} with {ATLAS_CLOUD_DEFAULT_MODEL}.</div>
                             </div>
                             <div className="flex items-center mt-2">
                                 <button
@@ -629,6 +659,13 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
                                             Verifying...
                                         </span>
                                     ) : 'Verify'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={applyAtlasCloudWorkflowDefaults}
+                                    className="ml-2 px-4 py-2 rounded-lg font-medium text-xs transition-colors bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200"
+                                >
+                                    Use Atlas Cloud
                                 </button>
                             </div>
                             {workflowVerificationResult && (
@@ -706,4 +743,4 @@ export function ApiKeyModal({ isOpen, onClose, onSave, initialApiKey = '', onCon
             </Modal>
         </div>
     );
-} 
+}
