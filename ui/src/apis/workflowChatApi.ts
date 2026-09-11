@@ -816,7 +816,8 @@ export namespace WorkflowChatAPI {
   }
 
   export async function restoreWorkflowCheckpoint(
-    versionId: number
+    versionId: number,
+    sessionId: string
   ): Promise<{
     version_id: number;
     workflow_data: any;
@@ -829,6 +830,7 @@ export namespace WorkflowChatAPI {
         method: 'GET',
         headers: {
           'trace-id': generateUUID(),
+          'X-Session-ID': sessionId,
         },
       });
 
@@ -880,4 +882,3 @@ export namespace WorkflowChatAPI {
 }
 
   
-

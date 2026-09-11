@@ -20,7 +20,12 @@ except Exception:
     )
 from .workflow_rewrite_agent_simple import rewrite_workflow_simple
 
-from ..dao.workflow_table import get_workflow_data, save_workflow_data, get_workflow_data_ui, get_workflow_data_by_id
+from ..dao.workflow_table import (
+    get_workflow_data,
+    save_workflow_data,
+    get_workflow_data_ui,
+    get_workflow_data_by_id_and_session,
+)
 from ..utils.comfy_gateway import get_object_info, get_object_info_by_class
 from ..utils.request_context import get_rewrite_context, get_session_id
 from ..utils.logger import log
@@ -30,9 +35,9 @@ def get_workflow_data_from_config(config: Dict[str, Any]) -> Optional[Dict[str, 
     workflow_checkpoint_id = config.get('workflow_checkpoint_id')
     session_id = config.get('session_id')
     
-    if workflow_checkpoint_id:
+    if workflow_checkpoint_id and session_id:
         try:
-            checkpoint_data = get_workflow_data_by_id(workflow_checkpoint_id)
+            checkpoint_data = get_workflow_data_by_id_and_session(workflow_checkpoint_id, session_id)
             if checkpoint_data and checkpoint_data.get('workflow_data'):
                 return checkpoint_data['workflow_data']
         except Exception as e:
@@ -48,9 +53,9 @@ def get_workflow_data_ui_from_config(config: Dict[str, Any]) -> Optional[Dict[st
     workflow_checkpoint_id = config.get('workflow_checkpoint_id')
     session_id = config.get('session_id')
     
-    if workflow_checkpoint_id:
+    if workflow_checkpoint_id and session_id:
         try:
-            checkpoint_data = get_workflow_data_by_id(workflow_checkpoint_id)
+            checkpoint_data = get_workflow_data_by_id_and_session(workflow_checkpoint_id, session_id)
             if checkpoint_data and checkpoint_data.get('workflow_data_ui'):
                 return checkpoint_data['workflow_data_ui']
         except Exception as e:
