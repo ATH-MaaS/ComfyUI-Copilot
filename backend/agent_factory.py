@@ -7,50 +7,37 @@ FilePath: /comfyui_copilot/backend/agent_factory.py
 Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 '''
 
+_AGENTS_AVAILABLE = False
+_AGENTS_IMPORT_ERROR = (
+    "Detected incorrect or missing 'agents' package. "
+    "Please uninstall legacy RL 'agents' (and tensorflow/gym if pulled transitively) and install openai-agents. "
+    "Commands:\n"
+    "  python -m pip uninstall -y agents gym tensorflow\n"
+    "  python -m pip install -U openai-agents\n\n"
+    "Alternatively, keep both by setting COMFYUI_COPILOT_PREFER_OPENAI_AGENTS=1 so this plugin prefers openai-agents."
+)
+
 try:
     from agents import Agent, OpenAIChatCompletionsModel, ModelSettings, Runner, set_tracing_disabled, set_default_openai_api
     if not hasattr(__import__('agents'), 'Agent'):
-        raise ImportError
+        raise ImportError("agents package missing Agent class")
+    _AGENTS_AVAILABLE = True
 except Exception:
-    # Give actionable guidance without crashing obscurely
-    raise ImportError(
-        "Detected incorrect or missing 'agents' package. "
-        "Please uninstall legacy RL 'agents' (and tensorflow/gym if pulled transitively) and install openai-agents. "
-        "Commands:\n"
-        "  python -m pip uninstall -y agents gym tensorflow\n"
-        "  python -m pip install -U openai-agents\n\n"
-        "Alternatively, keep both by setting COMFYUI_COPILOT_PREFER_OPENAI_AGENTS=1 so this plugin prefers openai-agents."
-    )
+    pass
+
 from dotenv import dotenv_values
 from .utils.globals import LLM_DEFAULT_BASE_URL, LMSTUDIO_DEFAULT_BASE_URL, get_comfyui_copilot_api_key, is_lmstudio_url
 from openai import AsyncOpenAI
-
-
-from agents._config import set_default_openai_api
-from agents.tracing import set_tracing_disabled
 import asyncio
-# from .utils.logger import log
 
-# def load_env_config():
-#     """Load environment variables from .env.llm file"""
-#     from dotenv import load_dotenv
-
-#     env_file_path = os.path.join(os.path.dirname(__file__), '.env.llm')
-#     if os.path.exists(env_file_path):
-#         load_dotenv(env_file_path)
-#         log.info(f"Loaded environment variables from {env_file_path}")
-#     else:
-#         log.warning(f"Warning: .env.llm not found at {env_file_path}")
+if _AGENTS_AVAILABLE:
+    set_default_openai_api("chat_completions")
+    set_tracing_disabled(False)
 
 
-# # Load environment configuration
-# load_env_config()
-
-set_default_openai_api("chat_completions")
-set_tracing_disabled(False)
-
-
-def create_agent(**kwargs) -> Agent:
+def create_agent(**kwargs):
+    if not _AGENTS_AVAILABLE:
+        raise ImportError(_AGENTS_IMPORT_ERROR)
     # 通过用户配置拿/环境变量
     config = kwargs.pop("config") if "config" in kwargs else {}
     # 避免将 None 写入 headers

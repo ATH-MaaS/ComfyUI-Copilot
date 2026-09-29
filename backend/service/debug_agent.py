@@ -3,8 +3,12 @@ Debug Agent for ComfyUI Workflow Error Analysis
 '''
 from ..utils.key_utils import workflow_config_adapt
 from ..agent_factory import create_agent
-from agents.items import ItemHelpers
-from agents.run import Runner
+try:
+    from agents.items import ItemHelpers
+    from agents.run import Runner
+except ImportError:
+    ItemHelpers = None
+    Runner = None
 from ..utils.globals import WORKFLOW_MODEL_NAME, get_language
 from ..service.workflow_rewrite_tools import *
 from openai.types.responses import ResponseTextDeltaEvent
