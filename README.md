@@ -178,12 +178,27 @@ After running the ComfyUI project, find the Copilot activation button on the lef
 Click the * button, enter your email address in the popup window, and the API Key will be automatically sent to your email address later. After receiving the API Key, paste it into the input box, click the save button, and you can activate Copilot.
 <img src="assets/keygen.png"/>
 
-#### **Config your model(OpenAI/LMStudio)**
+#### **Config your model(OpenAI/LMStudio/MiniMax)**
 Click the * button，config chat model and workflow generate model seperately.
 <div align="center">
   <img width="50%" alt="image" src="https://github.com/user-attachments/assets/ae27f5d4-3cf8-4138-b7cb-1bd2555fcc06" />
 
 </div>
+
+#### **Using MiniMax as LLM Provider**
+[MiniMax](https://www.minimaxi.com/) provides OpenAI-compatible API with powerful models (MiniMax-M3 with 512K context window and 128K max output, plus MiniMax-M2.7 and MiniMax-M2.7-highspeed).
+
+**Option 1 — Environment variables** (recommended for permanent setup):
+```bash
+export MINIMAX_API_KEY="your-minimax-api-key"
+# Then start ComfyUI as usual
+```
+
+**Option 2 — UI configuration**:
+1. Click the settings button in ComfyUI-Copilot
+2. Set **Base URL** to `https://api.minimax.io/v1`
+3. Enter your MiniMax API key
+4. Select a MiniMax model from the dropdown
 
 #### **Note**：
 This project is continuously updated. Please update to the latest code to get new features. You can use git pull to get the latest code, or click "Update" in the ComfyUI Manager plugin.

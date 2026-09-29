@@ -179,6 +179,21 @@ https://github.com/user-attachments/assets/17f8e822-e852-47fc-8dcb-0471526b099e
     <img  width="50%" alt="image" src="https://github.com/user-attachments/assets/3411f48f-d597-4ad1-b45f-9819ecec2fa7" />
 </div>
 
+#### **使用 MiniMax 作为 LLM 提供商**
+[MiniMax](https://www.minimaxi.com/) 提供 OpenAI 兼容的 API，支持高性能模型（MiniMax-M3，512K 上下文窗口，最大输出 128K，以及 MiniMax-M2.7 和 MiniMax-M2.7-highspeed）。
+
+**方式一 — 环境变量**（推荐，适用于固定配置）：
+```bash
+export MINIMAX_API_KEY="your-minimax-api-key"
+# 然后照常启动 ComfyUI
+```
+
+**方式二 — UI 配置**：
+1. 点击 ComfyUI-Copilot 的设置按钮
+2. 将 **Base URL** 设置为 `https://api.minimax.io/v1`
+3. 输入 MiniMax API Key
+4. 从下拉菜单中选择 MiniMax 模型
+
 
 #### **注意**：
 本项目持续更新中，请更新到最新代码以获取新功能。您可以使用 git pull 获取最新代码，或在 ComfyUI Manager 插件中点击“更新”。
