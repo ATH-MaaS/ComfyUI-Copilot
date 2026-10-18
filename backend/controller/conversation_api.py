@@ -23,6 +23,7 @@ import shutil
 from ..service.debug_agent import debug_workflow_errors
 from ..dao.workflow_table import save_workflow_data, get_workflow_data_by_id, update_workflow_ui_by_id
 from ..service.mcp_client import comfyui_agent_invoke
+from ..service.search_mcp import search_config_from_headers
 from ..utils.request_context import set_request_context, get_session_id
 from ..utils.logger import log
 from ..utils.modelscope_gateway import ModelScopeGateway
@@ -252,6 +253,7 @@ async def invoke_chat(request):
     # 构建配置信息
     config = {
         "session_id": session_id,
+        **search_config_from_headers(request.headers),
         "workflow_checkpoint_id": workflow_checkpoint_id,
         **get_llm_config_from_headers(request),
         "model_select": next((x['data'][0] for x in ext if x['type'] == 'model_select' and x.get('data')), None)

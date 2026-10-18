@@ -180,6 +180,18 @@ https://github.com/user-attachments/assets/17f8e822-e852-47fc-8dcb-0471526b099e
 </div>
 
 
+#### 无需 Copilot 密钥的网页研究
+
+运行 `pip install -r requirements.txt` 更新依赖，然后重启 ComfyUI。
+
+在设置中配置自己的聊天模型后，Copilot 可通过 [Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp) 搜索最新节点文档并读取网页。搜索使用 Fast 模式，无需注册账户或搜索 API 密钥。可以询问“查找 ComfyUI 自定义节点的官方文档并解释输入和输出”，也可以提供网页 URL。
+
+未配置 Copilot 密钥或自定义 `BACKEND_BASE_URL` 时，聊天代理默认使用 Parallel，并跳过托管 Copilot 工具。此模式不提供托管节点查询、工作流检索和生成功能。本地工作流工具及改写代理仍使用原有模型配置。
+
+已有 Copilot 密钥或显式配置 `BACKEND_BASE_URL` 的用户继续使用托管工具和 Bing 搜索。在 `.env` 中设置 `CC_WEB_SEARCH_PROVIDER=parallel`、`bing` 或 `none`，重启 ComfyUI 后可显式选择搜索服务；`none` 禁用网页搜索和抓取。API 客户端可通过请求头 `Web-Search-Provider` 覆盖环境配置。服务出错后不会自动切换供应商。选择 Parallel 不会禁用已配置的托管后端。
+
+Parallel 接收聊天模型选择的查询和页面 URL，不接收 Copilot 密钥或会话请求头。匿名服务存在使用限制，服务错误通过现有聊天错误流程反馈。
+
 #### **注意**：
 本项目持续更新中，请更新到最新代码以获取新功能。您可以使用 git pull 获取最新代码，或在 ComfyUI Manager 插件中点击“更新”。
 我们的项目依赖于一些外部接口，服务部署在新加坡，可能需要您使用科学上网工具哦。

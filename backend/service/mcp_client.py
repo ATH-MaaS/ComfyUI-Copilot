@@ -36,6 +36,7 @@ except Exception:
 from ..agent_factory import create_agent
 from ..service.workflow_rewrite_agent import create_workflow_rewrite_agent
 from ..service.message_memory import message_memory_optimize
+from ..service.search_mcp import agent_mcp_servers, search_instructions
 from ..utils.request_context import get_rewrite_context, get_session_id, get_config
 from ..utils.logger import log
 from openai.types.responses import ResponseTextDeltaEvent
@@ -64,6 +65,7 @@ async def comfyui_agent_invoke(messages: List[Dict[str, Any]], images: List[Imag
     Yields:
         tuple: (text, ext) where text is accumulated text and ext is structured data
     """
+    run_result = None
     try:
         def _strip_trailing_whitespace_from_messages(
             msgs: List[Dict[str, Any]]
@@ -117,30 +119,9 @@ async def comfyui_agent_invoke(messages: List[Dict[str, Any]], images: List[Imag
         messages = message_memory_optimize(session_id, messages)
         log.info(f"[MCP] Optimized messages count: {len(messages)}, messages: {messages}")
         
-        # Create MCP server instances
-        mcp_server = MCPServerSse(
-            params= {
-                "url": BACKEND_BASE_URL + "/mcp-server/mcp",
-                "timeout": 300.0,
-                "headers": {"X-Session-Id": session_id, "Authorization": f"Bearer {get_comfyui_copilot_api_key()}"}
-            },
-            cache_tools_list=True,
-            client_session_timeout_seconds=300.0
-        )
-        
-        bing_server = MCPServerSse(
-            params= {
-                "url": "https://mcp.api-inference.modelscope.net/8c9fe550938e4f/sse",
-                "timeout": 300.0,
-                "headers": {"X-Session-Id": session_id, "Authorization": f"Bearer {get_comfyui_copilot_api_key()}"}
-            },
-            cache_tools_list=True,
-            client_session_timeout_seconds=300.0
-        )
-        
-        server_list = [mcp_server, bing_server]
-        
-        async with mcp_server, bing_server:
+        async with agent_mcp_servers(
+            config, session_id, get_comfyui_copilot_api_key(), BACKEND_BASE_URL
+        ) as (server_list, hosted_tools, search_provider):
             
             # 创建workflow_rewrite_agent实例 (session_id通过context获取)
             workflow_rewrite_agent_instance = create_workflow_rewrite_agent()
@@ -201,7 +182,17 @@ async def comfyui_agent_invoke(messages: List[Dict[str, Any]], images: List[Imag
             )
             
             # Construct instructions based on DISABLE_WORKFLOW_GEN
-            if DISABLE_WORKFLOW_GEN:
+            if not hosted_tools:
+                workflow_creation_instruction = """
+**CASE 3: FIND NEW WORKFLOW INFORMATION**
+IF the user wants a new workflow, use available web search tools for documentation and examples.
+Hosted workflow recall and generation are unavailable without a configured Copilot service.
+Do not claim to have generated or imported a workflow through unavailable tools.
+"""
+                workflow_constraint = """
+- Hosted node search, workflow recall and generation tools are unavailable. Use only tools in the provided tool list; explain this limitation when those features are requested.
+"""
+            elif DISABLE_WORKFLOW_GEN:
                 workflow_creation_instruction = """
 **CASE 3: SEARCH WORKFLOW**
 IF the user wants to find or generate a NEW workflow.
@@ -281,8 +272,7 @@ You must adhere to the following constraints to complete the task:
 {workflow_constraint}
 - When the user's intent is to query, return the query result directly without attempting to assist the user in performing operations.
 - When the user's intent is to get prompts for image generation (like Stable Diffusion). Use specific descriptive language with proper weight modifiers (e.g., (word:1.2)), prefer English terms, and separate elements with commas. Include quality terms (high quality, detailed), style specifications (realistic, anime), lighting (cinematic, golden hour), and composition (wide shot, close up) as needed. When appropriate, include negative prompts to exclude unwanted elements. Return words divided by commas directly without any additional text.
-- If you cannot find the information needed to answer a query, consider using bing_search to obtain relevant information. For example, if search_node tool cannot find the node, you can use bing_search to obtain relevant information about those nodes or components.
-- If search_node tool cannot find the node, you MUST use bing_search to obtain relevant information about those nodes or components.
+{search_instructions(search_provider)}
 
 - **ERROR MESSAGE ANALYSIS** - When a user pastes specific error text/logs (containing terms like "Failed", "Error", "Traceback", or stack traces), prioritize providing troubleshooting help rather than invoking search tools. Follow these steps:
   1. Analyze the error to identify the root cause (error type, affected component, missing dependencies, etc.)
@@ -318,6 +308,7 @@ You must adhere to the following constraints to complete the task:
                 input=agent_input,
                 max_turns=30,
             )
+            run_result = result
             log.info("=== MCP Agent Run starting ===")
             
             # Variables to track response state similar to reference facade.py
@@ -456,6 +447,9 @@ You must adhere to the following constraints to complete the task:
                             else:
                                 pass  # Ignore other event types
                                 
+                except (asyncio.CancelledError, GeneratorExit):
+                    stream_result.cancel()
+                    raise
                 except Exception as e:
                     log.error(f"Unexpected streaming error: {e}")
                     log.error(f"Traceback: {traceback.format_exc()}")
@@ -500,6 +494,7 @@ You must adhere to the following constraints to complete the task:
                                 agent,
                                 input=agent_input,
                             )
+                            run_result = result
                             log.info(f"=== Retry attempt {retry_count} starting ===")
                         except Exception as retry_setup_error:
                             log.error(f"Failed to setup retry: {retry_setup_error}")
@@ -719,3 +714,6 @@ You must adhere to the following constraints to complete the task:
             }
         
         yield (error_message, error_ext)
+    finally:
+        if run_result is not None and not run_result.is_complete:
+            run_result.cancel()

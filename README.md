@@ -185,6 +185,18 @@ Click the * button，config chat model and workflow generate model seperately.
 
 </div>
 
+#### Web research without a Copilot key
+
+Update dependencies with `pip install -r requirements.txt` and restart ComfyUI.
+
+With your own chat model configured in Settings, Copilot can search current node documentation and read web pages through [Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp). Search uses Fast mode, with no account or search API key required. Ask a question such as “Find the official documentation for ComfyUI custom nodes and explain the inputs and outputs,” or provide a page URL.
+
+When no Copilot key or custom `BACKEND_BASE_URL` is configured, the chat agent uses Parallel and skips the hosted Copilot tools. Hosted node lookup, workflow recall and generation are unavailable in this mode. Local workflow tools and the rewrite handoff remain available with their existing model configuration.
+
+Existing Copilot credentials or an explicit `BACKEND_BASE_URL` retain the hosted tools and Bing search. To select search explicitly, set `CC_WEB_SEARCH_PROVIDER=parallel`, `bing`, or `none` in `.env` and restart ComfyUI. `none` disables web search and page fetching. API clients can override this per request with the `Web-Search-Provider` header. An explicit selection is never replaced automatically after an error. Selecting Parallel does not disable a configured hosted backend.
+
+Parallel receives search queries and page URLs selected by the chat model. Copilot credentials and session headers are not forwarded to Parallel. Anonymous service limits apply; a service error is reported through the existing chat error path.
+
 #### **Note**：
 This project is continuously updated. Please update to the latest code to get new features. You can use git pull to get the latest code, or click "Update" in the ComfyUI Manager plugin.
 

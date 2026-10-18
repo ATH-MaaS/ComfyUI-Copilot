@@ -61,7 +61,7 @@ def create_agent(**kwargs) -> Agent:
 
     # Determine base URL and API key
     base_url = LLM_DEFAULT_BASE_URL
-    api_key = get_comfyui_copilot_api_key() or ""
+    api_key = (config or {}).get("copilot_api_key", get_comfyui_copilot_api_key()) or ""
 
     if config:
         if config.get("openai_base_url") and config.get("openai_base_url") != "":
