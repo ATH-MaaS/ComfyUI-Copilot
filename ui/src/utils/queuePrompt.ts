@@ -125,7 +125,7 @@ export async function getOutputImagesByPromptId(promptId: string): Promise<{[nod
     try {
       if(!promptId || promptId === "") {
         console.log("No prompt ID provided");
-        return { "1": [createErrorImage("Fail to generate prompt ID")] };
+        return { "1": [createErrorImage("Failed to generate prompt ID")] };
       }
   
       // Get the history for the prompt
