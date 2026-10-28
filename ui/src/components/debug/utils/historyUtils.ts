@@ -122,8 +122,10 @@ export const formatDate = (timestamp: number): string => {
  */
 export const formatNodeNameWithParams = (
   nodeName: string,
-  params: {[key: string]: any}
+  params: {[key: string]: any} | null | undefined
 ): string => {
+  params = params || {};
+
   // Check if we have nodeParams structure which contains node-to-params mapping
   if (params.nodeParams) {
     const nodeParamsEntries = Object.entries(params.nodeParams);

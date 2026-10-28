@@ -1,6 +1,14 @@
 // Copyright (C) 2025 AIDC-AI
 // Licensed under the MIT License.
 
+// Local SVG placeholder keeps pending/failed generations independent of external image hosts.
+const placeholderSvg = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300">
+    <rect width="100%" height="100%" fill="#f3f4f6" />
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6b7280" font-family="sans-serif" font-size="16">Image pending</text>
+  </svg>`;
+export const PARAMETER_DEBUG_PLACEHOLDER_IMAGE = `data:image/svg+xml,${encodeURIComponent(placeholderSvg)}`;
+
 // 生成数值类型的测试参数
 export const generateNumericTestValues = (
   min: number, 

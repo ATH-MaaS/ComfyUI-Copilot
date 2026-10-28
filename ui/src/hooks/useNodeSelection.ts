@@ -24,7 +24,7 @@ export function useNodeSelection(enabled: boolean = true) {
       const isAllowedScreenParameterDebug = true;//!screenState || screenState.currentScreen === 0;
       
       if ((isChatTab) || (isAllowedScreenParameterDebug && isParameterDebugTab)) {
-        const selectedNodes = app.canvas.selected_nodes;
+        const selectedNodes = app?.canvas?.selected_nodes;
         if (Object.keys(selectedNodes ?? {}).length) {
           dispatch({ type: 'SET_SELECTED_NODE', payload: Object.values(selectedNodes) });
         } else {

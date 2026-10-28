@@ -1,5 +1,5 @@
 import { getHistory, runPrompt } from "../apis/comfyApiCustom";
-import { app } from "../utils/comfyapp";
+import { api, app } from "../utils/comfyapp";
 
 export type WidgetParamConf = {
     nodeId: number;
@@ -163,11 +163,15 @@ export async function getOutputImagesByPromptId(promptId: string): Promise<{[nod
             // Process each image for this node
             for (const img of nodeOutput.images) {
               if (img && img.filename && img.type) {
-                // Construct the image URL using the ComfyUI view endpoint
-                // const imageUrl = `${window.location.origin}/view?filename=${encodeURIComponent(img.filename)}&type=${encodeURIComponent(img.type)}${img.subfolder ? '&subfolder=' + encodeURIComponent(img.subfolder) : ''}`;
-                //app.graph._nodes_by_id[3].imgs[0].currentSrc
-                const urlBase = app?.graph._nodes_by_id?.[nodeId]?.imgs?.[0]?.currentSrc?.split("?")[0];
-                outputImages[nodeId].push(urlBase + "?filename=" + encodeURIComponent(img.filename) + "&type=" + encodeURIComponent(img.type) + (img.subfolder ? "&subfolder=" + encodeURIComponent(img.subfolder) : ""));
+                const viewUrl = api?.apiURL?.("/view");
+                if (!viewUrl) continue;
+
+                const query = new URLSearchParams({
+                  filename: img.filename,
+                  type: img.type,
+                });
+                if (img.subfolder) query.set("subfolder", img.subfolder);
+                outputImages[nodeId].push(`${viewUrl}?${query.toString()}`);
               }
             }
             

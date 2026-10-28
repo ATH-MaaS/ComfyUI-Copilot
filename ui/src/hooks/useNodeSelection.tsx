@@ -9,7 +9,8 @@ export function useNodeSelection(enabled: boolean = true) {
     if (!enabled) return;
     
     const handleNodeSelected = () => {
-      if (!app.canvas.selected_nodes || Object.keys(app.canvas.selected_nodes).length === 0) {
+      const selectedNodes = app?.canvas?.selected_nodes;
+      if (!selectedNodes || Object.keys(selectedNodes).length === 0) {
         dispatch({ type: 'SET_SELECTED_NODE', payload: null });
         return;
       }
@@ -32,7 +33,7 @@ export function useNodeSelection(enabled: boolean = true) {
       //   outputs: selectedNode.outputs
       // };
       
-      dispatch({ type: 'SET_SELECTED_NODE', payload: Object.values(app.canvas.selected_nodes) });
+      dispatch({ type: 'SET_SELECTED_NODE', payload: Object.values(selectedNodes) });
     };
 
     // Listen for selection events

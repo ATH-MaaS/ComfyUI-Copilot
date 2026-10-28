@@ -57,7 +57,7 @@ export const HistoryItemScreen: React.FC<HistoryItemScreenProps> = ({
         />
       </div>
       <div className="p-2 text-xs text-gray-600 bg-white max-h-16 overflow-y-auto">
-        {Object.entries(image.params)
+        {Object.entries(image.params || {})
           // Filter out nodeParams and other complex objects from display
           .filter(([paramName, value]) => 
             paramName !== 'nodeParams' && 
